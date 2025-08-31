@@ -27,7 +27,7 @@ To build and run the examples:
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/Computer-Graphics-Lab.git
+git clone https://github.com/danierumr/Computer-Graphics-Lab.git
 cd Computer-Graphics-Lab
 
 # (Example for Linux / Mac, with CMake)
