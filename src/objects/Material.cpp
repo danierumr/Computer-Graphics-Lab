@@ -2,6 +2,7 @@
 
 Material::Material() {
     // Inicialização, se necessário
+    mBaseColor = glm::vec3(1.0f, 1.0f, 1.0f);
 }
 
 Material::~Material() {
@@ -18,6 +19,17 @@ void Material::Use(const Shader* shader) const {
     if (!shader) {
         std::cerr << "ERROR: Null shader in Material!\n";
     }
+
+    shader->setVec3("baseColor", mBaseColor);
+
+    if (textures.empty()){
+        shader->setBool("useTexture", false);
+        return;
+    }
+    else {
+        shader->setBool("useTexture", true);
+    }
+
     for (const auto& t : textures) {
         if (t.texture) {
             t.texture->Bind(t.unit);

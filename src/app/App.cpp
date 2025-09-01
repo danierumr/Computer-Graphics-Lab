@@ -121,7 +121,7 @@ void App::ProcessInput() {
 
 void App::Render() {
     
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 view;
@@ -139,6 +139,11 @@ void App::Render() {
 
     // Objects
     shader->Use();
+
+    shader->setVec3("lightColor", light->mColor);
+    shader->setVec3("lightPos", light->mPosition);
+    shader->setVec3("viewPos", mCamera->GetPosition());
+
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
 
@@ -157,35 +162,35 @@ void App::BuildCompileShaders() {
     std::vector<Vertex> vertices = {
         // positions        // texture coords
         // Front
-        {{0.5f,  0.5f,  0.5f},  {1.0f, 1.0f}},
-        {{0.5f, -0.5f,  0.5f},  {1.0f, 0.0f}},
-        {{-0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
-        {{-0.5f,  0.5f,  0.5f},  {0.0f, 1.0f}},
+        {{0.5f,  0.5f,  0.5f},  {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+        {{0.5f, -0.5f,  0.5f},  {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.5f, -0.5f,  0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
         // Back
-        {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
-        {{0.5f, -0.5f, -0.5f},  {1.0f, 0.0f}},
-        {{-0.5f, -0.5f, -0.5f},  {0.0f, 0.0f}},
-        {{-0.5f,  0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}},
+        {{0.5f, -0.5f, -0.5f},  {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},
+        {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},
+        {{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}},
         // Right
-        {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
-        {{0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
-        {{0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
-        {{0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}, {1.0f, 0.0f,  0.0f}},
+        {{0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}, {1.0f, 0.0f,  0.0f}},
+        {{0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}, {1.0f, 0.0f,  0.0f}},
+        {{0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}, {1.0f, 0.0f,  0.0f}},
         // Left
-        {{-0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
-        {{-0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
-        {{-0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
-        {{-0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
-       // Top
-        {{-0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
-        {{-0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
-        {{0.5f,  0.5f,  0.5f},  {0.0f, 0.0f}},
-        {{0.5f,  0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{-0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}, {-1.0f, 0.0f,  0.0f}},
+        {{-0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}, {-1.0f, 0.0f,  0.0f}},
+        {{-0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}, {-1.0f, 0.0f,  0.0f}},
+        {{-0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}, {-1.0f, 0.0f,  0.0f}},
+        // Top
+        {{-0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
+        {{-0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+        {{0.5f,  0.5f,  0.5f},   {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+        {{0.5f,  0.5f, -0.5f},   {0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
         // Bottom
-        {{-0.5f, -0.5f, -0.5f},  {1.0f, 1.0f}},
-        {{-0.5f, -0.5f,  0.5f},  {1.0f, 0.0f}},
-        {{0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
-        {{0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{-0.5f, -0.5f, -0.5f},  {1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}},
+        {{-0.5f, -0.5f,  0.5f},  {1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}},
+        {{0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}},
+        {{0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}},
     };
 
     
@@ -214,11 +219,14 @@ void App::BuildCompileShaders() {
 
     cubeMesh = new Mesh(vertices, indices);
     cube = new Object(cubeMesh);
+    cube->CreateMaterial();
+    cube->GetMaterial()->SetBaseColor(glm::vec3(1.0f, 0.5f, 0.31f));
     // cube->CreateMaterial();
     // cube->GetMaterial()->CreateTexture("../assets/container.jpg");
 
     light = new Light();
     light->mPosition = glm::vec3(1.2f, 1.0f, 2.0f);
+    light->mColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
 
 }

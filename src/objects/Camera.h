@@ -31,6 +31,7 @@ public:
 
     glm::mat4 GetVIewMatrix() { return glm::lookAt(mPosition, mPosition + mFront, mUp); }
     float GetFOV() { return mZoom; }
+    glm::vec3 GetPosition() { return mPosition; }
 
 private:
 
