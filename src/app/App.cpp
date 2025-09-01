@@ -4,12 +4,65 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "../objects/Mesh.h"
+#include "../objects/Object.h"
+#include "../objects/Texture.h"
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {glViewport(0, 0, width, height);}
+
+// void App::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+//     if (firstMouse) {
+//         lastX = xpos;
+//         lastY = ypos;
+//     }
+
+//     float xoffset = xpos - lastX;
+//     float yoffset = lastX - ypos;
+//     lastX = xpos;
+//     lastY = ypos;
+
+//     float sensitivity = 0.1f;
+//     xoffset *= sensitivity;
+//     yoffset *= sensitivity;
+
+//     yaw += xoffset;
+//     pitch += yoffset;
+
+//     if (pitch > 89.0f)
+//         pitch = 89.0f;
+//     if (pitch < -89.0f)
+//         pitch = -89.0f;
+
+//     glm::vec3 direction;
+//     direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+//     direction.y = sin(glm::radians(pitch));
+//     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+//     cameraFront = glm::normalize(direction);
+// }
 
 
 App::App(int width, int height) 
     : window(nullptr), windowWidth(width), windowHeight(height) {
+
+        cubePositions = {
+            glm::vec3( 0.0f,  0.0f,  0.0f), 
+            glm::vec3( 2.0f,  5.0f, -15.0f), 
+            glm::vec3(-1.5f, -2.2f, -2.5f),  
+            glm::vec3(-3.8f, -2.0f, -12.3f),  
+            glm::vec3( 2.4f, -0.4f, -3.5f),  
+            glm::vec3(-1.7f,  3.0f, -7.5f),  
+            glm::vec3( 1.3f, -2.0f, -2.5f),  
+            glm::vec3( 1.5f,  2.0f, -2.5f), 
+            glm::vec3( 1.5f,  0.2f, -1.5f), 
+            glm::vec3(-1.3f,  1.0f, -1.5f)  
+        };
+
+        cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+        cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+        cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+        deltaTime = 0.0f;
+        lastFrame = 0.0f;
 
 }
 
@@ -54,7 +107,14 @@ void App::Run() {
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    // glfwSetCursorPosCallback(window, App::mouse_callback);
+
     while (!glfwWindowShouldClose(window)) {
+
+        deltaTime = glfwGetTime() - lastFrame;
+        lastFrame = glfwGetTime();
         
         ProcessInput();
 
@@ -65,9 +125,6 @@ void App::Run() {
 
     }
 
-
-    glDeleteVertexArrays(1, &VAO);
-
 }
 
 void App::ProcessInput() {
@@ -76,6 +133,17 @@ void App::ProcessInput() {
         glfwSetWindowShouldClose(window, true);
     }
 
+    const float cameraSpeed = 2.0f * deltaTime;
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
 }
 
 void App::Render() {
@@ -83,28 +151,38 @@ void App::Render() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glBindTexture(GL_TEXTURE_2D, texture);
-
     shader->Use();
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
 
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    glm::mat4 view;
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(glm::radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
-    glUniformMatrix4fv(glGetUniformLocation(shader->GetShaderProgram(), "model"), 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(glGetUniformLocation(shader->GetShaderProgram(), "view"), 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(glGetUniformLocation(shader->GetShaderProgram(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    
+    shader->setMat4("view", view);
+    shader->setMat4("projection", projection);
 
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-    glBindVertexArray(0);
+    for (unsigned int i=0;i<10;i++) {
+
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePositions[i]);
+        float angle = 20.0f * i;
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        
+        cube->SetModelMatrix(model);
+        cube->Render(shader);
+
+
+        // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    }
+
+
+    // glBindVertexArray(0);
 
 }
 
@@ -112,117 +190,65 @@ void App::BuildCompileShaders() {
 
     shader = new Shader("../src/shaders/shader.vs", "../src/shaders/shader.fs");
 
-    // Vertex data and buffers
-    float vertices[] = {
-        // positions         // colors        // texture coords
+    std::vector<Vertex> vertices = {
+        // positions        // texture coords
         // Front
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-       -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+        {{0.5f,  0.5f,  0.5f},  {1.0f, 1.0f}},
+        {{0.5f, -0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{-0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
+        {{-0.5f,  0.5f,  0.5f},  {0.0f, 1.0f}},
         // Back
-        0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-       -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+        {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{0.5f, -0.5f, -0.5f},  {1.0f, 0.0f}},
+        {{-0.5f, -0.5f, -0.5f},  {0.0f, 0.0f}},
+        {{-0.5f,  0.5f, -0.5f},  {0.0f, 1.0f}},
         // Right
-        0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+        {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
+        {{0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
         // Left
-       -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-       -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-       -0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+        {{-0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{-0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{-0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
+        {{-0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
        // Top
-       -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-       -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-        // Top
-       -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-       -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+        {{-0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{-0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{0.5f,  0.5f,  0.5f},  {0.0f, 0.0f}},
+        {{0.5f,  0.5f, -0.5f},  {0.0f, 1.0f}},
+        // Bottom
+        {{-0.5f, -0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{-0.5f, -0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
+        {{0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
     };
 
     
-    unsigned int indices[] = {
+    std::vector<unsigned int> indices = {
+        // Front face
         0, 1, 3,
         1, 2, 3,
-
+        // Back face
         4, 5, 7,
         5, 6, 7,
-
+        // Right face
         8, 9, 11,
         9, 10, 11,
-
-        12, 13, 14,
+        // Left face
+        12, 13, 15,
         13, 14, 15,
-
+        // Top face
         16, 17, 19,
         17, 18, 19,
-
+        // Bottom face
         20, 21, 23,
-        21, 22, 23,
-
-        24, 25, 27,
-        25, 26, 27,
-
-        28, 29, 31,
-        29, 30, 31,
-
-        32, 33, 35,
-        33, 34, 35
+        21, 22, 23
     };
 
-    unsigned int VBO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // Position
-    GLint posAttrib = glGetAttribLocation(shader->GetShaderProgram(), "aPos");
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(posAttrib);
-    // Color
-    GLint colAttrib = glGetAttribLocation(shader->GetShaderProgram(), "aColor");
-    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(colAttrib);
-    // Texture
-    GLint texAttrib = glGetAttribLocation(shader->GetShaderProgram(), "aTexCoord");
-    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(texAttrib);
-
-    // Texture
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load("../assets/container.jpg", &width, &height, &nrChannels, 0);
-    if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-
-    stbi_image_free(data);
-
-    shader->Use();
+    cubeMesh = new Mesh(vertices, indices);
+    cube = new Object(cubeMesh);
+    cube->CreateMaterial();
+    cube->GetMaterial()->CreateTexture("../assets/container.jpg");
 
 }

@@ -17,6 +17,15 @@ set(SOURCES
     src/render/Shader.h
     src/render/Shader.cpp
 
+    src/objects/Mesh.h
+    src/objects/Mesh.cpp
+    src/objects/Object.h
+    src/objects/Object.cpp
+    src/objects/Texture.h
+    src/objects/Texture.cpp
+    src/objects/Material.h
+    src/objects/Material.cpp
+
 )
 
 # Encontrar OpenGL e GLFW
