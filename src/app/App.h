@@ -5,6 +5,7 @@
 #include <iostream>
 #include "../render/Shader.h"
 #include <vector>
+#include "../objects/Camera.h"
 
 class App {
 public:
@@ -25,11 +26,9 @@ private:
     int windowHeight;
 
     // Camera
-    glm::vec3 cameraPos, cameraFront, cameraUp;
-
-    bool firstMouse = true;
-    float lastX=400, lastY=300;
-    float yaw=-90.0f, pitch=0.0f;
+    Camera* mCamera;
+    bool firstMouse;
+    float lastX, lastY;
 
     // for render
     unsigned int VAO, texture;
@@ -43,6 +42,10 @@ private:
     void Render();
 
     void BuildCompileShaders();
+
+    void OnResize(int w, int h);
+    void OnMouseMove(double xpos, double ypos);
+    void OnScroll(double xoffset, double yoffset);
 
     float deltaTime;
     float lastFrame;

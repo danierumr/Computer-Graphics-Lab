@@ -8,38 +8,6 @@
 #include "../objects/Object.h"
 #include "../objects/Texture.h"
 
-void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {glViewport(0, 0, width, height);}
-
-// void App::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-//     if (firstMouse) {
-//         lastX = xpos;
-//         lastY = ypos;
-//     }
-
-//     float xoffset = xpos - lastX;
-//     float yoffset = lastX - ypos;
-//     lastX = xpos;
-//     lastY = ypos;
-
-//     float sensitivity = 0.1f;
-//     xoffset *= sensitivity;
-//     yoffset *= sensitivity;
-
-//     yaw += xoffset;
-//     pitch += yoffset;
-
-//     if (pitch > 89.0f)
-//         pitch = 89.0f;
-//     if (pitch < -89.0f)
-//         pitch = -89.0f;
-
-//     glm::vec3 direction;
-//     direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-//     direction.y = sin(glm::radians(pitch));
-//     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-//     cameraFront = glm::normalize(direction);
-// }
-
 
 App::App(int width, int height) 
     : window(nullptr), windowWidth(width), windowHeight(height) {
@@ -57,12 +25,13 @@ App::App(int width, int height)
             glm::vec3(-1.3f,  1.0f, -1.5f)  
         };
 
-        cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-        cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-        cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
         deltaTime = 0.0f;
         lastFrame = 0.0f;
+
+        lastX = windowWidth/2.0f;
+        lastY = windowHeight/2.0f;
+
+        mCamera = new Camera(glm::vec3(0.0f, 0.0f, 1.0f));
 
 }
 
@@ -88,12 +57,26 @@ void App::Init() {
     }
 
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return;
     }
+
+    glfwSetWindowUserPointer(window, this);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* win, int w, int h) {
+        auto app = static_cast<App*>(glfwGetWindowUserPointer(win));
+        app->OnResize(w, h);
+    });
+    glfwSetCursorPosCallback(window, [](GLFWwindow* win, double x, double y) {
+        auto app = static_cast<App*>(glfwGetWindowUserPointer(win));
+        app->OnMouseMove(x, y);
+    });
+    glfwSetScrollCallback(window, [](GLFWwindow* win, double xoffset, double yoffset) {
+        auto app = static_cast<App*>(glfwGetWindowUserPointer(win));
+        app->OnScroll(xoffset, yoffset);
+    });
 
     glViewport(0, 0, windowWidth, windowHeight);
 
@@ -105,12 +88,7 @@ void App::Run() {
 
     BuildCompileShaders();
 
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    // glfwSetCursorPosCallback(window, App::mouse_callback);
-
+    // loop
     while (!glfwWindowShouldClose(window)) {
 
         deltaTime = glfwGetTime() - lastFrame;
@@ -133,16 +111,10 @@ void App::ProcessInput() {
         glfwSetWindowShouldClose(window, true);
     }
 
-    const float cameraSpeed = 2.0f * deltaTime;
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) mCamera->ProcessKeyboard(Camera_movement::FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) mCamera->ProcessKeyboard(Camera_movement::BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) mCamera->ProcessKeyboard(Camera_movement::LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) mCamera->ProcessKeyboard(Camera_movement::RIGHT, deltaTime);
 
 }
 
@@ -157,10 +129,10 @@ void App::Render() {
     model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
 
     glm::mat4 view;
-    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    view = mCamera->GetVIewMatrix();
 
     glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(mCamera->GetFOV()), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
@@ -251,4 +223,32 @@ void App::BuildCompileShaders() {
     cube->CreateMaterial();
     cube->GetMaterial()->CreateTexture("../assets/container.jpg");
 
+}
+
+
+void App::OnResize(int w, int h) {
+    glViewport(0, 0, w, h);
+}
+
+void App::OnMouseMove(double xpos, double ypos) {
+
+    std::cout << "Mouse call back: " << xpos << " - " << ypos << std::endl;
+
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+
+    mCamera->ProcessMouseMovement(xoffset, yoffset);
+
+}
+
+void App::OnScroll(double xoffset, double yoffset) {
+    mCamera->ProcessMouseScroll(yoffset);
 }
