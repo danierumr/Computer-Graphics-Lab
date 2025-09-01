@@ -7,6 +7,7 @@
 #include "../objects/Mesh.h"
 #include "../objects/Object.h"
 #include "../objects/Texture.h"
+#include "../objects/Light.h"
 
 
 App::App(int width, int height) 
@@ -119,48 +120,39 @@ void App::ProcessInput() {
 }
 
 void App::Render() {
-
+    
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    shader->Use();
-
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
 
     glm::mat4 view;
     view = mCamera->GetVIewMatrix();
 
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(glm::radians(mCamera->GetFOV()), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+    
+    // Light visuals
+    lightShader->Use();
+    lightShader->setMat4("view", view);
+    lightShader->setMat4("projection", projection);
 
+    light->RenderVisual(lightShader);
+
+    // Objects
+    shader->Use();
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
 
+    cube->Render(shader);
 
-    for (unsigned int i=0;i<10;i++) {
-
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, cubePositions[i]);
-        float angle = 20.0f * i;
-        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-        
-        cube->SetModelMatrix(model);
-        cube->Render(shader);
-
-
-        // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-    }
-
-
-    // glBindVertexArray(0);
 
 }
 
 void App::BuildCompileShaders() {
 
+    
     shader = new Shader("../src/shaders/shader.vs", "../src/shaders/shader.fs");
+    lightShader = new Shader("../src/shaders/lightVisual.vs", "../src/shaders/lightVisual.fs");
+    
 
     std::vector<Vertex> vertices = {
         // positions        // texture coords
@@ -218,10 +210,16 @@ void App::BuildCompileShaders() {
         21, 22, 23
     };
 
+    
+
     cubeMesh = new Mesh(vertices, indices);
     cube = new Object(cubeMesh);
-    cube->CreateMaterial();
-    cube->GetMaterial()->CreateTexture("../assets/container.jpg");
+    // cube->CreateMaterial();
+    // cube->GetMaterial()->CreateTexture("../assets/container.jpg");
+
+    light = new Light();
+    light->mPosition = glm::vec3(1.2f, 1.0f, 2.0f);
+
 
 }
 

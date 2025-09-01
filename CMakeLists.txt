@@ -27,6 +27,8 @@ set(SOURCES
     src/objects/Material.cpp
     src/objects/Camera.h
     src/objects/Camera.cpp
+    src/objects/Light.h
+    src/objects/Light.cpp
 
 )
 

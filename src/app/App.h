@@ -33,6 +33,7 @@ private:
     // for render
     unsigned int VAO, texture;
     Shader* shader;
+    Shader* lightShader;
 
 
     std::vector<glm::vec3> cubePositions;
@@ -54,6 +55,7 @@ private:
     // Objects
     class Mesh* cubeMesh;
     class Object* cube;
+    class Light* light;
 
 
 

@@ -15,6 +15,8 @@ public:
 
     void Use(const Shader* shader) const;
 
+    void SetBaseColor(glm::vec3 color) { mBaseColor = color; }
+
 private:
 
     struct TextureSlot {
@@ -24,4 +26,6 @@ private:
     };
 
     std::vector<TextureSlot> textures;
+    glm::vec3 mBaseColor;
+
 };
