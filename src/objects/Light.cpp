@@ -6,7 +6,7 @@ Light::Light(std::string format) {
 
     mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
     mColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    mIntensity = 1.0f;
+    mAmbientIntensity = mDiffuseIntensity = mSpecularIntensity = 1.0f;
 
 
     CreateCubeVisual();

@@ -15,7 +15,7 @@ public:
     
     glm::vec3 mPosition;
     glm::vec3 mColor;
-    float mIntensity;
+    float mAmbientIntensity, mDiffuseIntensity, mSpecularIntensity;
 
     class Object* visual;
     class Mesh* visualMesh;

@@ -17,6 +17,9 @@ public:
 
     void SetBaseColor(glm::vec3 color) { mBaseColor = color; }
 
+    glm::vec3 mAmbient, mDiffuse, mSpecular;
+    float mShininess;
+
 private:
 
     struct TextureSlot {
@@ -26,6 +29,6 @@ private:
     };
 
     std::vector<TextureSlot> textures;
-    glm::vec3 mBaseColor;
+    glm::vec3 mBaseColor;   
 
 };

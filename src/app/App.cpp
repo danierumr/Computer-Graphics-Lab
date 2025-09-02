@@ -143,6 +143,9 @@ void App::Render() {
     shader->setVec3("lightColor", light->mColor);
     shader->setVec3("lightPos", light->mPosition);
     shader->setVec3("viewPos", mCamera->GetPosition());
+    shader->setFloat("lightIntensities.ambientIntensity", light->mAmbientIntensity);
+    shader->setFloat("lightIntensities.diffuseIntensity", light->mDiffuseIntensity);
+    shader->setFloat("lightIntensities.specularIntensity", light->mSpecularIntensity);
 
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
@@ -221,12 +224,20 @@ void App::BuildCompileShaders() {
     cube = new Object(cubeMesh);
     cube->CreateMaterial();
     cube->GetMaterial()->SetBaseColor(glm::vec3(1.0f, 0.5f, 0.31f));
+    cube->GetMaterial()->mAmbient = glm::vec3(1.0f, 0.5f, 0.31f);
+    cube->GetMaterial()->mDiffuse = glm::vec3(1.0f, 0.5f, 0.31f);
+    cube->GetMaterial()->mSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
+    cube->GetMaterial()->mShininess = 32.0f;
     // cube->CreateMaterial();
     // cube->GetMaterial()->CreateTexture("../assets/container.jpg");
 
     light = new Light();
     light->mPosition = glm::vec3(1.2f, 1.0f, 2.0f);
     light->mColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
+    light->mAmbientIntensity = 0.2f;
+    light->mDiffuseIntensity = 0.5f;
+    light->mSpecularIntensity = 1.0f;
 
 
 }
