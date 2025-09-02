@@ -130,6 +130,20 @@ void App::Render() {
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(glm::radians(mCamera->GetFOV()), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
     
+
+
+
+    float time = glfwGetTime();
+    float radius = 3.0f;
+
+    float x = cos(time) * radius;
+    float z = sin(time) * radius;
+
+    light->mPosition = glm::vec3(x, 0.0f, z);
+
+
+
+
     // Light visuals
     lightShader->Use();
     lightShader->setMat4("view", view);
@@ -139,6 +153,10 @@ void App::Render() {
 
     // Objects
     shader->Use();
+
+    // light->mColor.x = sin(glfwGetTime() * 2.0f);
+    // light->mColor.y = sin(glfwGetTime() * 0.7f);
+    // light->mColor.z = sin(glfwGetTime() * 1.3f);
 
     shader->setVec3("lightColor", light->mColor);
     shader->setVec3("lightPos", light->mPosition);
@@ -223,13 +241,13 @@ void App::BuildCompileShaders() {
     cubeMesh = new Mesh(vertices, indices);
     cube = new Object(cubeMesh);
     cube->CreateMaterial();
-    cube->GetMaterial()->SetBaseColor(glm::vec3(1.0f, 0.5f, 0.31f));
+    cube->GetMaterial()->SetBaseColor(glm::vec3(1.0f, 1.0f, 1.0f));
     cube->GetMaterial()->mAmbient = glm::vec3(1.0f, 0.5f, 0.31f);
     cube->GetMaterial()->mDiffuse = glm::vec3(1.0f, 0.5f, 0.31f);
     cube->GetMaterial()->mSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
     cube->GetMaterial()->mShininess = 32.0f;
     // cube->CreateMaterial();
-    // cube->GetMaterial()->CreateTexture("../assets/container.jpg");
+    cube->GetMaterial()->CreateTexture("../assets/container.jpg");
 
     light = new Light();
     light->mPosition = glm::vec3(1.2f, 1.0f, 2.0f);

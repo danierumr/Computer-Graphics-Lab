@@ -28,6 +28,7 @@ uniform vec3 viewPos;
 
 uniform sampler2D diffuseTex;
 uniform bool useTexture;
+
 uniform Material material;
 uniform Light lightIntensities;
 
