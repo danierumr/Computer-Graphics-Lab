@@ -267,8 +267,6 @@ void App::OnResize(int w, int h) {
 
 void App::OnMouseMove(double xpos, double ypos) {
 
-    std::cout << "Mouse call back: " << xpos << " - " << ypos << std::endl;
-
     if (firstMouse) {
         lastX = xpos;
         lastY = ypos;
