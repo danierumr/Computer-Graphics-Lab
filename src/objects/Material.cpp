@@ -1,56 +1,38 @@
 #include "Material.h"
 
+// One-time default texture (your fallback)
+std::shared_ptr<Texture> Material::sDefaultTex = nullptr;
+
 Material::Material() {
-    // Inicialização, se necessário
-    mBaseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-
-    mAmbient = glm::vec3(1.0f, 1.0f, 1.0f);
-    mDiffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-    mSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
-    mShininess = 32;
-}
-
-Material::~Material() {
-    for (auto& t : textures) {
-        delete t.texture; // só se você alocou com new
+    if (!sDefaultTex) {
+        // Make sure this path points to your actual asset
+        sDefaultTex = std::make_shared<Texture>("../assets/default_mat.jpg", GL_TEXTURE_2D);
     }
+    // By default, both slots use the fallback
+    mDiffuseTex  = sDefaultTex;
+    mSpecularTex = sDefaultTex; // If you prefer “no specular” by default, bind a black texture instead
 }
 
-void Material::AddTexture(const Texture* tex, const std::string& uniformName, int unit) {
-    textures.push_back({tex, uniformName, unit});
+void Material::SetDiffuse(const std::string& path) {
+    if (path.empty()) mDiffuseTex = sDefaultTex;
+    else              mDiffuseTex = std::make_shared<Texture>(path, GL_TEXTURE_2D);
+}
+
+void Material::SetSpecular(const std::string& path) {
+    if (path.empty()) mSpecularTex = sDefaultTex;   // consider a black 1×1 as a nicer default
+    else              mSpecularTex = std::make_shared<Texture>(path, GL_TEXTURE_2D);
 }
 
 void Material::Use(const Shader* shader) const {
-    if (!shader) {
-        std::cerr << "ERROR: Null shader in Material!\n";
-    }
 
-    shader->setVec3("baseColor", mBaseColor);
-        
-    shader->setVec3("material.ambient", mAmbient);
-    shader->setVec3("material.diffuse", mDiffuse);
-    shader->setVec3("material.specular", mSpecular);
+    // Bind textures to fixed units (match your GLSL)
+    mDiffuseTex->Bind(0);
+    shader->setInt("material.diffuse", 0);
+
+    mSpecularTex->Bind(1);
+    shader->setInt("material.specular", 1);
+
+    // Upload scalar uniforms
     shader->setFloat("material.shininess", mShininess);
-
-    if (textures.empty()){
-        shader->setBool("useTexture", false);
-        return;
-    }
-    else {
-        shader->setBool("useTexture", true);
-    }
-
-    for (const auto& t : textures) {
-        if (t.texture) {
-            t.texture->Bind(t.unit);
-            shader->setInt(t.uniformName, t.unit);
-        }
-    }
-}
-
-void Material::CreateTexture(const std::string& path, GLenum type, const std::string& uniformName, int unit) {
-
-    Texture* tempTex = new Texture(path, type);
-    AddTexture(tempTex, uniformName, unit);
-
+    shader->setVec3("material.baseColor", mBaseColor);
 }

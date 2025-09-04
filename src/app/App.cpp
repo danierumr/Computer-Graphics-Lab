@@ -133,13 +133,13 @@ void App::Render() {
 
 
 
-    float time = glfwGetTime();
-    float radius = 3.0f;
+    // float time = glfwGetTime();
+    // float radius = 3.0f;
 
-    float x = cos(time) * radius;
-    float z = sin(time) * radius;
+    // float x = cos(time) * radius;
+    // float z = sin(time) * radius;
 
-    light->mPosition = glm::vec3(x, 0.0f, z);
+    // light->mPosition = glm::vec3(x, 0.0f, z);
 
 
 
@@ -158,12 +158,12 @@ void App::Render() {
     // light->mColor.y = sin(glfwGetTime() * 0.7f);
     // light->mColor.z = sin(glfwGetTime() * 1.3f);
 
-    shader->setVec3("lightColor", light->mColor);
-    shader->setVec3("lightPos", light->mPosition);
+    shader->setVec3("light.color", light->mColor);
+    shader->setVec3("light.position", light->mPosition);
     shader->setVec3("viewPos", mCamera->GetPosition());
-    shader->setFloat("lightIntensities.ambientIntensity", light->mAmbientIntensity);
-    shader->setFloat("lightIntensities.diffuseIntensity", light->mDiffuseIntensity);
-    shader->setFloat("lightIntensities.specularIntensity", light->mSpecularIntensity);
+    shader->setFloat("light.ambientIntensity", light->mAmbientIntensity);
+    shader->setFloat("light.diffuseIntensity", light->mDiffuseIntensity);
+    shader->setFloat("light.specularIntensity", light->mSpecularIntensity);
 
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
@@ -242,12 +242,8 @@ void App::BuildCompileShaders() {
     cube = new Object(cubeMesh);
     cube->CreateMaterial();
     cube->GetMaterial()->SetBaseColor(glm::vec3(1.0f, 1.0f, 1.0f));
-    cube->GetMaterial()->mAmbient = glm::vec3(1.0f, 0.5f, 0.31f);
-    cube->GetMaterial()->mDiffuse = glm::vec3(1.0f, 0.5f, 0.31f);
-    cube->GetMaterial()->mSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
-    cube->GetMaterial()->mShininess = 32.0f;
-    // cube->CreateMaterial();
-    cube->GetMaterial()->CreateTexture("../assets/container.jpg");
+    cube->GetMaterial()->SetDiffuse("../assets/container2.png");
+    cube->GetMaterial()->SetSpecular("../assets/container2_specular.png");
 
     light = new Light();
     light->mPosition = glm::vec3(1.2f, 1.0f, 2.0f);

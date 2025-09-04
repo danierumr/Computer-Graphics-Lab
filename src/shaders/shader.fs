@@ -1,18 +1,19 @@
 #version 330 core
 
 struct Material {
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
+    sampler2D diffuse;
+    sampler2D specular;
     float shininess;
+    vec3 baseColor;
 };
 
 struct Light {
+    vec3 position;
+    vec3 color;
     float ambientIntensity;
     float diffuseIntensity;
     float specularIntensity;
 };
-  
 
 in vec2 TexCoord;
 in vec3 Normal;
@@ -20,40 +21,29 @@ in vec3 FragPos;
 
 out vec4 FragColor;
 
-uniform vec3 baseColor;
-
-uniform vec3 lightColor;
-uniform vec3 lightPos;
 uniform vec3 viewPos;
-
-uniform sampler2D diffuseTex;
-uniform bool useTexture;
-
 uniform Material material;
-uniform Light lightIntensities;
+uniform Light light;
 
 void main() {
 
     // ambient
-    vec3 ambient = lightIntensities.ambientIntensity * lightColor * material.ambient;
+    // vec3 ambient = light.ambientIntensity * light.color * material.baseColor;
+    vec3 ambient = light.ambientIntensity * light.color * texture(material.diffuse, TexCoord).rgb;
 
     // diffuse
     vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(lightPos - FragPos);
+    vec3 lightDir = normalize(light.position - FragPos);
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = lightIntensities.diffuseIntensity * lightColor * (diff * material.diffuse);
+    vec3 diffuse = light.diffuseIntensity * light.color * diff * texture(material.diffuse, TexCoord).rgb;
 
     // specular
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = lightIntensities.specularIntensity * lightColor * (spec * material.specular);
+    vec3 specular = light.specularIntensity * light.color * spec * texture(material.specular, TexCoord).rgb;
 
-    vec3 resultColor = (ambient + diffuse + specular) * baseColor;
+    vec3 result = (ambient + diffuse + specular);
+    FragColor = vec4(result, 1.0);
 
-    if (useTexture) {
-        FragColor = texture(diffuseTex, TexCoord) * vec4(resultColor, 1.0);
-    } else {
-        FragColor = vec4(resultColor, 1.0);
-    }
 }
