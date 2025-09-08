@@ -244,6 +244,7 @@ void App::BuildCompileShaders() {
     cube->GetMaterial()->SetBaseColor(glm::vec3(1.0f, 1.0f, 1.0f));
     cube->GetMaterial()->SetDiffuse("../assets/container2.png");
     cube->GetMaterial()->SetSpecular("../assets/container2_specular.png");
+    cube->GetMaterial()->SetEmission("../assets/matrix.jpg");
 
     light = new Light();
     light->mPosition = glm::vec3(1.2f, 1.0f, 2.0f);

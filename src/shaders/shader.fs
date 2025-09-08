@@ -3,8 +3,10 @@
 struct Material {
     sampler2D diffuse;
     sampler2D specular;
+    sampler2D emission;
     float shininess;
     vec3 baseColor;
+    bool emissive;
 };
 
 struct Light {
@@ -43,7 +45,16 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specularIntensity * light.color * spec * texture(material.specular, TexCoord).rgb;
 
-    vec3 result = (ambient + diffuse + specular);
+    // emission
+    vec3 emission = vec3(0.0);
+    if (material.emissive) {
+        // if there is no specular, so it stays inside the box
+        if (texture(material.specular, TexCoord).rgb == vec3(0.0)) {
+            emission = texture(material.emission, TexCoord).rgb;
+        }
+    }
+
+    vec3 result = (ambient + diffuse + specular + emission);
     FragColor = vec4(result, 1.0);
 
 }
