@@ -149,7 +149,7 @@ void App::Render() {
     lightShader->setMat4("view", view);
     lightShader->setMat4("projection", projection);
 
-    light->RenderVisual(lightShader);
+    light->Render();
 
     // Objects
     shader->Use();
@@ -168,7 +168,7 @@ void App::Render() {
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
 
-    cube->Render(shader);
+    cube->Render();
 
 
 }
@@ -239,14 +239,14 @@ void App::BuildCompileShaders() {
     
 
     cubeMesh = new Mesh(vertices, indices);
-    cube = new Object(cubeMesh);
+    cube = new Object(shader, cubeMesh);
     cube->CreateMaterial();
     cube->GetMaterial()->SetBaseColor(glm::vec3(1.0f, 1.0f, 1.0f));
     cube->GetMaterial()->SetDiffuse("../assets/container2.png");
     cube->GetMaterial()->SetSpecular("../assets/container2_specular.png");
     cube->GetMaterial()->SetEmission("../assets/matrix.jpg");
 
-    light = new Light();
+    light = new Light(lightShader);
     light->mPosition = glm::vec3(1.2f, 1.0f, 2.0f);
     light->mColor = glm::vec3(1.0f, 1.0f, 1.0f);
 

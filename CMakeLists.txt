@@ -29,6 +29,7 @@ set(SOURCES
     src/objects/Camera.cpp
     src/objects/Light.h
     src/objects/Light.cpp
+    src/objects/ComponentRender.h
 
 )
 

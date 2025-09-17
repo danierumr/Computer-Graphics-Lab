@@ -52,6 +52,10 @@ private:
     float lastFrame;
 
 
+    // // Components to render
+    // std::vector<ComponentRender*> componentsToRender;
+    // std::vector<ComponentRender*> lightsToRender;
+
     // Objects
     class Mesh* cubeMesh;
     class Object* cube;

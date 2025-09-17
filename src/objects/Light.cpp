@@ -3,23 +3,24 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 
-Light::Light(std::string format) {
+Light::Light(const Shader* shader, std::string format) {
 
     mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
     mColor = glm::vec3(1.0f, 1.0f, 1.0f);
     mAmbientIntensity = mDiffuseIntensity = mSpecularIntensity = 1.0f;
 
+    mShader = shader;
 
     CreateCubeVisual();
 }
 
-void Light::RenderVisual(const Shader* shader) {
+void Light::Render() const {
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, mPosition);
     model = glm::scale(model, glm::vec3(0.2f));
     visual->SetModelMatrix(model);
-    visual->Render(shader);
+    visual->Render();
 
 }
 
@@ -84,7 +85,7 @@ void Light::CreateCubeVisual() {
 
 
     visualMesh = new Mesh(vertices, indices);
-    visual = new Object(visualMesh);
+    visual = new Object(mShader, visualMesh);
 
 
     visual->CreateMaterial();

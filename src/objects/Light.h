@@ -3,13 +3,16 @@
 #include <glm/glm.hpp>
 #include <string>
 
-class Light {
+#include "ComponentRender.h"
+
+class Light  : public ComponentRender
+{
 
 public:
 
-    Light(std::string format = "cube");
+    Light(const class Shader* shader, std::string format = "cube");
 
-    void RenderVisual(const class Shader* shader);
+    void Render() const;
 
     void CreateCubeVisual();
     
@@ -20,5 +23,5 @@ public:
     class Object* visual;
     class Mesh* visualMesh;
 
-
+    const class Shader* mShader;
 };

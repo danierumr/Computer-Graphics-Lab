@@ -1,9 +1,11 @@
 #include "Object.h"
 
-Object::Object(Mesh* mesh) {
+Object::Object(const Shader* shader, Mesh* mesh) {
 
     model = glm::mat4(1.0f);
     mMesh = mesh;
+
+    mShader = shader;
 
 }
 
@@ -18,12 +20,12 @@ void Object::CreateMaterial() {
 
 }
 
-void Object::Render(const Shader* shader) const {
+void Object::Render() const {
 
-    if (!shader || !mMesh) return;
+    if (!mShader || !mMesh) return;
 
-    shader->setMat4("model", model);
+    mShader->setMat4("model", model);
 
-    mMesh->Render(shader, mMaterial);
+    mMesh->Render(mShader, mMaterial);
 
 }

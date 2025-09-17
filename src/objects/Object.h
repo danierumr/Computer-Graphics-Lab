@@ -5,15 +5,17 @@
 #include "Mesh.h"
 #include "../render/Shader.h"
 #include "Material.h"
+#include "ComponentRender.h"
 
-class Object {
+class Object : public ComponentRender
+{
 
 public:
 
-    Object(Mesh* mesh);
+    Object(const Shader* shader, Mesh* mesh);
     ~Object();
     
-    void Render(const Shader* shader) const;
+    void Render() const;
 
     void CreateMaterial();
     
@@ -35,5 +37,7 @@ private:
     glm::vec3 scale;
 
     glm::mat4 model;
+
+    const Shader* mShader;
 
 };
