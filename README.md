@@ -5,14 +5,14 @@ The goal is to explore rendering techniques, practice modern OpenGL, and build a
 
 ---
 
-## 📌 Project Overview
+## Project Overview
 - A collection of test programs and experiments in **OpenGL**.
 - Code follows along with **LearnOpenGL** and extends into custom experiments.
 - Serves as a sandbox for learning and exploration in **Computer Graphics**.
 
 ---
 
-## ⚙️ Libraries & Tools
+## Libraries & Tools
 This project makes use of the following libraries:
 - **OpenGL 3.3** (Core Profile)
 - **GLFW** – window & input management
@@ -22,7 +22,7 @@ This project makes use of the following libraries:
 
 ---
 
-## 🏗️ Build & Run
+## Build & Run
 To build and run the examples:
 
 ```bash
