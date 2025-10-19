@@ -51,7 +51,6 @@ private:
     float deltaTime;
     float lastFrame;
 
-
     // // Components to render
     // std::vector<ComponentRender*> componentsToRender;
     // std::vector<ComponentRender*> lightsToRender;
@@ -59,7 +58,9 @@ private:
     // Objects
     class Mesh* cubeMesh;
     class Object* cube;
-    class Light* light;
+
+    class DirLight* dirLight;
+    class Pointlight* pointlight;
 
 
 

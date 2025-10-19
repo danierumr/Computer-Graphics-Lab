@@ -7,7 +7,10 @@
 #include "../objects/Mesh.h"
 #include "../objects/Object.h"
 #include "../objects/Texture.h"
-#include "../objects/Light.h"
+#include "../objects/Light/Light.h"
+#include "../objects/Light/Pointlight.h"
+#include "../objects/Light/DirLight.h"
+
 
 
 App::App(int width, int height) 
@@ -149,7 +152,7 @@ void App::Render() {
     lightShader->setMat4("view", view);
     lightShader->setMat4("projection", projection);
 
-    light->Render();
+    pointlight->Render();
 
     // Objects
     shader->Use();
@@ -158,12 +161,10 @@ void App::Render() {
     // light->mColor.y = sin(glfwGetTime() * 0.7f);
     // light->mColor.z = sin(glfwGetTime() * 1.3f);
 
-    shader->setVec3("light.color", light->mColor);
-    shader->setVec3("light.position", light->mPosition);
+    pointlight->SetPropertiesInShader(shader);
+    dirLight->SetPropertiesInShader(shader);
+
     shader->setVec3("viewPos", mCamera->GetPosition());
-    shader->setFloat("light.ambientIntensity", light->mAmbientIntensity);
-    shader->setFloat("light.diffuseIntensity", light->mDiffuseIntensity);
-    shader->setFloat("light.specularIntensity", light->mSpecularIntensity);
 
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
@@ -246,14 +247,19 @@ void App::BuildCompileShaders() {
     cube->GetMaterial()->SetSpecular("../assets/container2_specular.png");
     cube->GetMaterial()->SetEmission("../assets/matrix.jpg");
 
-    light = new Light(lightShader);
-    light->mPosition = glm::vec3(1.2f, 1.0f, 2.0f);
-    light->mColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    pointlight = new Pointlight(lightShader);
+    pointlight->mPosition = glm::vec3(1.2f, 1.0f, 2.0f);
+    pointlight->mColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
-    light->mAmbientIntensity = 0.2f;
-    light->mDiffuseIntensity = 0.5f;
-    light->mSpecularIntensity = 1.0f;
+    pointlight->mAmbient = glm::vec3(.2f, .2f, .2f);
+    pointlight->mDiffuse = glm::vec3(.5f, .5f, .5f);
 
+
+    dirLight = new DirLight();
+    dirLight->mDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
+    dirLight->mAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
+    dirLight->mDiffuse = glm::vec3(0.4f, 0.4f, 0.4f);
+    dirLight->mSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
 
 }
 

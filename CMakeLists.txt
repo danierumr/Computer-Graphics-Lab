@@ -27,8 +27,14 @@ set(SOURCES
     src/objects/Material.cpp
     src/objects/Camera.h
     src/objects/Camera.cpp
-    src/objects/Light.h
-    src/objects/Light.cpp
+
+    src/objects/Light/Light.h
+    src/objects/Light/Light.cpp
+    src/objects/Light/Pointlight.h
+    src/objects/Light/Pointlight.cpp
+    src/objects/Light/DirLight.h
+    src/objects/Light/DirLight.cpp
+    
     src/objects/ComponentRender.h
 
 )

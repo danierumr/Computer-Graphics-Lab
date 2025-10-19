@@ -1,30 +1,28 @@
-#include "Light.h"
-#include "Object.h"
+#include "Pointlight.h"
+#include "../../render/Shader.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include <GLFW/glfw3.h>
+#include "../Object.h"
 
-Light::Light(const Shader* shader, std::string format) {
 
-    mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-    mColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    mAmbientIntensity = mDiffuseIntensity = mSpecularIntensity = 1.0f;
-
-    mShader = shader;
-
+Pointlight::Pointlight(Shader* shader, int index, std::string format, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) 
+    : Light(index, format, ambient, diffuse, specular),
+    mLightShader(shader)
+{   
     CreateCubeVisual();
 }
 
-void Light::Render() const {
+void Pointlight::Render() const {
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, mPosition);
     model = glm::scale(model, glm::vec3(0.2f));
+
     visual->SetModelMatrix(model);
     visual->Render();
 
 }
 
-void Light::CreateCubeVisual() {
+void Pointlight::CreateCubeVisual() {
 
 
     std::vector<Vertex> vertices = {
@@ -85,10 +83,25 @@ void Light::CreateCubeVisual() {
 
 
     visualMesh = new Mesh(vertices, indices);
-    visual = new Object(mShader, visualMesh);
+    visual = new Object(mLightShader, visualMesh);
 
 
     visual->CreateMaterial();
     visual->GetMaterial()->SetBaseColor(glm::vec3(1.0f, 1.0f, 1.0f));
+
+}
+
+void Pointlight::SetPropertiesInShader(Shader* shader) {
+
+    // TODO: mColor is not implemented in any way
+
+    shader->setVec3("pointLights[0].position", mPosition);
+    shader->setVec3("pointLights[0].ambient", mAmbient);
+    shader->setVec3("pointLights[0].diffuse", mDiffuse);
+    shader->setVec3("pointLights[0].specular", mSpecular);
+
+    shader->setFloat("pointLights[0].constant", 1.0f);
+    shader->setFloat("pointLights[0].linear", 0.09f);
+    shader->setFloat("pointLights[0].quadratic", 0.032f);
 
 }
