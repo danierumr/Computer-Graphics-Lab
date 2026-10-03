@@ -6,9 +6,11 @@ class Pointlight : public Light {
 
 public:
 
+    ~Pointlight() override;
+
     Pointlight(class Shader* shader, int index = 0, std::string format = "cube", glm::vec3 ambient = glm::vec3(1.0f), glm::vec3 diffuse = glm::vec3(1.0f), glm::vec3 specular = glm::vec3(1.0f));
 
-    void SetPropertiesInShader(class Shader* shader) override;
+    void SetPropertiesInShader(class Shader* shader, int index = 0) override;
 
     void Render() const;
     void CreateCubeVisual();

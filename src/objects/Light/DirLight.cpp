@@ -7,14 +7,9 @@ DirLight::DirLight(int index, std::string format, glm::vec3 direction, glm::vec3
     mDirection = direction;
 }
 
-void DirLight::SetPropertiesInShader(Shader* shader) {
-
-    // TODO: mColor is not implemented in any way
-
+void DirLight::SetPropertiesInShader(Shader* shader, int index) {
     shader->setVec3("dirLight.direction", mDirection);
-    
     shader->setVec3("dirLight.ambient", mAmbient);
     shader->setVec3("dirLight.diffuse", mDiffuse);
     shader->setVec3("dirLight.specular", mSpecular);
-
 }

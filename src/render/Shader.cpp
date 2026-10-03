@@ -1,5 +1,9 @@
 #include "Shader.h"
 
+Shader::~Shader() {
+    glDeleteProgram(ID);
+}
+
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 
     // Get Shaders file and put in const char*

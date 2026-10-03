@@ -10,7 +10,6 @@ Object::Object(const Shader* shader, Mesh* mesh) {
 }
 
 Object::~Object() {
-    delete mMesh;
     delete mMaterial;
 }
 

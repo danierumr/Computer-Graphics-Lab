@@ -4,6 +4,11 @@
 #include "../Object.h"
 
 
+Pointlight::~Pointlight() {
+    delete visual;
+    delete visualMesh;
+}
+
 Pointlight::Pointlight(Shader* shader, int index, std::string format, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) 
     : Light(index, format, ambient, diffuse, specular),
     mLightShader(shader)
@@ -91,17 +96,15 @@ void Pointlight::CreateCubeVisual() {
 
 }
 
-void Pointlight::SetPropertiesInShader(Shader* shader) {
+void Pointlight::SetPropertiesInShader(Shader* shader, int index) {
+    const std::string base = "pointLights[" + std::to_string(index) + "]";
 
-    // TODO: mColor is not implemented in any way
+    shader->setVec3(base + ".position", mPosition);
+    shader->setVec3(base + ".ambient", mAmbient);
+    shader->setVec3(base + ".diffuse", mDiffuse);
+    shader->setVec3(base + ".specular", mSpecular);
 
-    shader->setVec3("pointLights[0].position", mPosition);
-    shader->setVec3("pointLights[0].ambient", mAmbient);
-    shader->setVec3("pointLights[0].diffuse", mDiffuse);
-    shader->setVec3("pointLights[0].specular", mSpecular);
-
-    shader->setFloat("pointLights[0].constant", 1.0f);
-    shader->setFloat("pointLights[0].linear", 0.09f);
-    shader->setFloat("pointLights[0].quadratic", 0.032f);
-
+    shader->setFloat(base + ".constant", 1.0f);
+    shader->setFloat(base + ".linear", 0.09f);
+    shader->setFloat(base + ".quadratic", 0.032f);
 }
