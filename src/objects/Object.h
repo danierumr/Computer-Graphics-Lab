@@ -23,6 +23,10 @@ public:
     void SetRotation(const glm::vec3 &rot) { rotation = rot; }
     void SetScale(const glm::vec3 &scl) { scale = scl; }
     
+    glm::vec3 GetPosition() const { return position; }
+    glm::vec3 GetRotation() const { return rotation; }
+    glm::vec3 GetScale() const { return scale; }
+    
     void SetModelMatrix(const glm::mat4 &mat) { model = mat; }
     
     void SetMaterial(Material* m) { mMaterial = m; }

@@ -12,4 +12,4 @@ Light::Light(int index, std::string format, glm::vec3 ambient, glm::vec3 diffuse
     mSpecular = specular;
 }
 
-void Light::SetPropertiesInShader(Shader* shader) {}
+void Light::SetPropertiesInShader(Shader* shader, int index) {}

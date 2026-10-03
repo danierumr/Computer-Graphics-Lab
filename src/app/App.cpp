@@ -16,30 +16,40 @@
 App::App(int width, int height) 
     : window(nullptr), windowWidth(width), windowHeight(height) {
 
-        cubePositions = {
-            glm::vec3( 0.0f,  0.0f,  0.0f), 
-            glm::vec3( 2.0f,  5.0f, -15.0f), 
-            glm::vec3(-1.5f, -2.2f, -2.5f),  
-            glm::vec3(-3.8f, -2.0f, -12.3f),  
-            glm::vec3( 2.4f, -0.4f, -3.5f),  
-            glm::vec3(-1.7f,  3.0f, -7.5f),  
-            glm::vec3( 1.3f, -2.0f, -2.5f),  
-            glm::vec3( 1.5f,  2.0f, -2.5f), 
-            glm::vec3( 1.5f,  0.2f, -1.5f), 
-            glm::vec3(-1.3f,  1.0f, -1.5f)  
-        };
-
         deltaTime = 0.0f;
         lastFrame = 0.0f;
+        firstMouse = true;
 
         lastX = windowWidth/2.0f;
         lastY = windowHeight/2.0f;
 
         mCamera = new Camera(glm::vec3(0.0f, 0.0f, 1.0f));
+        shader = nullptr;
+        lightShader = nullptr;
+        cubeMesh = nullptr;
+        cube = nullptr;
+        dirLight = nullptr;
+        pointlight = nullptr;
 
 }
 
 App::~App() {
+    for (Object* obj : objects) {
+        delete obj;
+    }
+    objects.clear();
+
+    for (Pointlight* light : pointLights) {
+        delete light;
+    }
+    pointLights.clear();
+
+    delete dirLight;
+    delete cubeMesh;
+    delete shader;
+    delete lightShader;
+    delete mCamera;
+
     if (window) {
         glfwDestroyWindow(window);
     }
@@ -69,6 +79,7 @@ void App::Init() {
 
     glfwSetWindowUserPointer(window, this);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    firstMouse = true;
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* win, int w, int h) {
         auto app = static_cast<App*>(glfwGetWindowUserPointer(win));
         app->OnResize(w, h);
@@ -152,24 +163,31 @@ void App::Render() {
     lightShader->setMat4("view", view);
     lightShader->setMat4("projection", projection);
 
-    pointlight->Render();
+    for (Pointlight* light : pointLights) {
+        light->Render();
+    }
 
     // Objects
     shader->Use();
 
-    // light->mColor.x = sin(glfwGetTime() * 2.0f);
-    // light->mColor.y = sin(glfwGetTime() * 0.7f);
-    // light->mColor.z = sin(glfwGetTime() * 1.3f);
-
-    pointlight->SetPropertiesInShader(shader);
+    const size_t activePointLightCount = pointLights.size() < 4 ? pointLights.size() : 4;
+    shader->setInt("pointLightCount", static_cast<int>(activePointLightCount));
+    for (size_t i = 0; i < activePointLightCount; ++i) {
+        pointLights[i]->SetPropertiesInShader(shader, static_cast<int>(i));
+    }
     dirLight->SetPropertiesInShader(shader);
 
     shader->setVec3("viewPos", mCamera->GetPosition());
-
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
 
-    cube->Render();
+    for (Object* obj : objects) {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, obj->GetPosition());
+        model = glm::scale(model, obj->GetScale());
+        obj->SetModelMatrix(model);
+        obj->Render();
+    }
 
 
 }
@@ -240,20 +258,35 @@ void App::BuildCompileShaders() {
     
 
     cubeMesh = new Mesh(vertices, indices);
-    cube = new Object(shader, cubeMesh);
-    cube->CreateMaterial();
-    cube->GetMaterial()->SetBaseColor(glm::vec3(1.0f, 1.0f, 1.0f));
-    cube->GetMaterial()->SetDiffuse("../assets/container2.png");
-    cube->GetMaterial()->SetSpecular("../assets/container2_specular.png");
-    cube->GetMaterial()->SetEmission("../assets/matrix.jpg");
 
-    pointlight = new Pointlight(lightShader);
-    pointlight->mPosition = glm::vec3(1.2f, 1.0f, 2.0f);
-    pointlight->mColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    auto createCube = [&](const glm::vec3& position, const glm::vec3& color, const std::string& diffuse = "../assets/container2.png", const std::string& specular = "../assets/container2_specular.png") {
+        Object* obj = new Object(shader, cubeMesh);
+        obj->CreateMaterial();
+        obj->SetPosition(position);
+        obj->SetScale(glm::vec3(1.0f));
+        obj->GetMaterial()->SetBaseColor(color);
+        obj->GetMaterial()->SetDiffuse(diffuse);
+        obj->GetMaterial()->SetSpecular(specular);
+        objects.push_back(obj);
+        return obj;
+    };
 
-    pointlight->mAmbient = glm::vec3(.2f, .2f, .2f);
-    pointlight->mDiffuse = glm::vec3(.5f, .5f, .5f);
+    cube = createCube(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    createCube(glm::vec3(2.0f, 0.0f, -2.0f), glm::vec3(0.8f, 0.6f, 0.5f));
+    createCube(glm::vec3(-2.0f, 0.0f, -3.0f), glm::vec3(0.5f, 0.7f, 0.9f));
 
+    auto createPointLight = [&](const glm::vec3& position, const glm::vec3& ambient, const glm::vec3& diffuse) {
+        Pointlight* light = new Pointlight(lightShader);
+        light->mPosition = position;
+        light->mColor = glm::vec3(1.0f, 1.0f, 1.0f);
+        light->mAmbient = ambient;
+        light->mDiffuse = diffuse;
+        pointLights.push_back(light);
+        return light;
+    };
+
+    pointlight = createPointLight(glm::vec3(1.2f, 1.0f, 2.0f), glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.5f, 0.5f, 0.5f));
+    createPointLight(glm::vec3(-1.5f, 0.5f, 1.0f), glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.35f, 0.35f, 0.35f));
 
     dirLight = new DirLight();
     dirLight->mDirection = glm::vec3(-0.2f, -1.0f, -0.3f);

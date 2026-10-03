@@ -30,14 +30,8 @@ private:
     bool firstMouse;
     float lastX, lastY;
 
-    // for render
-    unsigned int VAO, texture;
     Shader* shader;
     Shader* lightShader;
-
-
-    std::vector<glm::vec3> cubePositions;
-
 
     void ProcessInput();
     void Render();
@@ -51,13 +45,11 @@ private:
     float deltaTime;
     float lastFrame;
 
-    // // Components to render
-    // std::vector<ComponentRender*> componentsToRender;
-    // std::vector<ComponentRender*> lightsToRender;
-
     // Objects
     class Mesh* cubeMesh;
     class Object* cube;
+    std::vector<class Object*> objects;
+    std::vector<class Pointlight*> pointLights;
 
     class DirLight* dirLight;
     class Pointlight* pointlight;
